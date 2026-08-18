@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>议事过程截图</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1080px;
+    font-family: 'Noto Serif SC', serif;
+    background: #f8f0e0;
+    padding: 40px;
+  }
+
+  /* 标题栏 */
+  .header-bar {
+    background: linear-gradient(135deg, #2c1810, #4a2a18);
+    border-radius: 16px 16px 0 0;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: #e0af68;
+    letter-spacing: 4px;
+  }
+
+  .header-tag {
+    padding: 6px 16px;
+    background: rgba(224,175,104,0.15);
+    border: 1px solid rgba(224,175,104,0.3);
+    border-radius: 20px;
+    color: #e0af68;
+    font-size: 14px;
+  }
+
+  /* 内容区 */
+  .content {
+    background: white;
+    border-radius: 0 0 16px 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  /* 议题 */
+  .topic {
+    background: linear-gradient(135deg, #fef3e0, #fde8c8);
+    border-left: 4px solid #e0af68;
+    padding: 16px 20px;
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 30px;
+  }
+
+  .topic-label {
+    font-size: 13px;
+    color: #8a6a3a;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+
+  .topic-text {
+    font-size: 20px;
+    font-weight: 900;
+    color: #2c1810;
+    letter-spacing: 2px;
+  }
+
+  /* 发言人卡片 */
+  .speaker-card {
+    margin-bottom: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .speaker-header {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .speaker-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: white;
+  }
+
+  .speaker-info {
+    flex: 1;
+  }
+
+  .speaker-name {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 2px;
+  }
+
+  .speaker-role {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+
+  .speaker-body {
+    padding: 0 20px 20px;
+    font-size: 17px;
+    line-height: 2;
+    color: #3a2a1a;
+  }
+
+  .speaker-body .highlight {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .speaker-body .quote {
+    color: #8b5a2b;
+    font-style: italic;
+    font-weight: 600;
+  }
+
+  /* 各人配色 */
+  .s1 .speaker-header { background: linear-gradient(135deg, #dc3c3c15, #dc3c3c08); }
+  .s1 .speaker-avatar { background: linear-gradient(135deg, #dc3c3c, #b02020); }
+  .s1 .speaker-name { color: #dc3c3c; }
+  .s1 .highlight { background: #dc3c3c15; color: #dc3c3c; }
+
+  .s2 .speaker-header { background: linear-gradient(135deg, #2a7ae215, #2a7ae208); }
+  .s2 .speaker-avatar { background: linear-gradient(135deg, #2a7ae2, #1a5ab0); }
+  .s2 .speaker-name { color: #2a7ae2; }
+  .s2 .highlight { background: #2a7ae215; color: #2a7ae2; }
+
+  .s3 .speaker-header { background: linear-gradient(135deg, #e0402015, #e0402008); }
+  .s3 .speaker-avatar { background: linear-gradient(135deg, #e04020, #b03018); }
+  .s3 .speaker-name { color: #e04020; }
+  .s3 .highlight { background: #e0402015; color: #e04020; }
+
+  .s4 .speaker-header { background: linear-gradient(135deg, #20a06015, #20a06008); }
+  .s4 .speaker-avatar { background: linear-gradient(135deg, #20a060, #108040); }
+  .s4 .speaker-name { color: #20a060; }
+  .s4 .highlight { background: #20a06015; color: #20a060; }
+
+  .s5 .speaker-header { background: linear-gradient(135deg, #a020c015, #a020c008); }
+  .s5 .speaker-avatar { background: linear-gradient(135deg, #a020c0, #8018a0); }
+  .s5 .speaker-name { color: #a020c0; }
+  .s5 .highlight { background: #a020c015; color: #a020c0; }
+
+  /* 反驳箭头 */
+  .response-arrow {
+    text-align: center;
+    padding: 4px 0;
+    color: #c0b0a0;
+    font-size: 14px;
+    letter-spacing: 4px;
+  }
+
+  /* 底部注释 */
+  .footnote {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: #f5f0e8;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .footnote-icon {
+    font-size: 28px;
+  }
+
+  .footnote-text {
+    font-size: 14px;
+    color: #6a5a4a;
+    line-height: 1.6;
+  }
+
+  .footnote-text b {
+    color: #3a2a1a;
+  }
+</style>
+</head>
+<body>
+  <div class="header-bar">
+    <div class="header-title">🏛 议事纪要</div>
+    <div class="header-tag">实时讨论中...</div>
+  </div>
+
+  <div class="content">
+    <!-- 议题 -->
+    <div class="topic">
+      <div class="topic-label">📋 议题</div>
+      <div class="topic-text">竞争对手降价了怎么办？</div>
+    </div>
+
+    <!-- 马云 -->
+    <div class="speaker-card s1">
+      <div class="speaker-header">
+        <div class="speaker-avatar">马</div>
+        <div class="speaker-info">
+          <div class="speaker-name">马云</div>
+          <div class="speaker-role">首辅 · 商业/经济</div>
+        </div>
+      </div>
+      <div class="speaker-body">
+        我经历过无数次价格战。淘宝打易趣的时候，eBay 说要用钱砸死我们——结果呢？价格战这个东西，<span class="highlight">你跟着打，你就输了</span>。客户要的不是便宜，是<span class="quote">「占便宜的感觉」</span>。你给他一个"贵得值"的理由，他比谁都忠诚。
+      </div>
+    </div>
+
+    <div class="response-arrow">↓ 回应前一位 ↓</div>
+
+    <!-- 诸葛亮 -->
+    <div class="speaker-card s2">
+      <div class="speaker-header">
+        <div class="speaker-avatar">诸</div>
+        <div class="speaker-info">
+          <div class="speaker-name">诸葛亮</div>
+          <div class="speaker-role">次辅 · 战略/综合</div>
+        </div>
+      </div>
+      <div class="speaker-body">
+        马总所言，臣深以为然。然臣补一言——"善战者致人，不致于人"，价格战之要，不在 price，在 <span class="highlight">position</span>。当守中寓攻：差异化守住核心，局部反击试探虚实。
+      </div>
+    </div>
+
+    <div class="response-arrow">↓ 挑战前一位 ↓</div>
+
+    <!-- 马斯克 -->
+    <div class="speaker-card s3">
+      <div class="speaker-header">
+        <div class="speaker-avatar">马</div>
+        <div class="speaker-info">
+          <div class="speaker-name">马斯克</div>
+          <div class="speaker-role">群辅 · 当代 · 第一性原理</div>
+        </div>
+      </div>
+      <div class="speaker-body">
+        你们都在讨论"怎么打赢价格战"，但我想问——<span class="highlight">为什么还要做现在这个产品？</span>用第一性原理拆解——如果从零开始设计，你会做成现在这样吗？如果不会，那对手降不降价根本不重要，因为你们都在解决一个<span class="quote">「错误的问题」</span>。
+      </div>
+    </div>
+
+    <div class="response-arrow">↓ ⚠️ 给事中封驳 ↓</div>
+
+    <!-- 韩非子 -->
+    <div class="speaker-card s5">
+      <div class="speaker-header">
+        <div class="speaker-avatar">韩</div>
+        <div class="speaker-info">
+          <div class="speaker-name">韩非子</div>
+          <div class="speaker-role">六科给事中 · 制度/法家</div>
+        </div>
+      </div>
+      <div class="speaker-body">
+        臣闻诸位皆言"长期主义"，臣独忧之。<span class="highlight">人之性，趋利避害。</span>主公今日言"不降价"，明日份额掉了五个点——守得住否？臣有三问：赏罚不明何以驱众？法度不立何以持久？<span class="quote">臣非阻主公行事，臣忧行之而不能终也。</span>
+      </div>
+    </div>
+
+    <!-- 底部说明 -->
+    <div class="footnote">
+      <div class="footnote-icon">💡</div>
+      <div class="footnote-text">
+        <b>每位谋士必须回应前一位的至少一个要点</b>（赞同/修正/反驳），形成真正的思想碰撞。给事中专职挑毛病，防止集体自嗨。
+      </div>
+    </div>
+  </div>
+</body>
+</html>

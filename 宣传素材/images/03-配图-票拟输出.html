@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智囊团 - 票拟输出</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 900px;
+    background: #1a1b26;
+    font-family: 'JetBrains Mono', 'Noto Serif SC', monospace;
+    color: #c0caf5;
+    padding: 0;
+  }
+
+  /* 终端顶栏 */
+  .terminal-bar {
+    height: 40px;
+    background: #16161e;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .dot { width: 13px; height: 13px; border-radius: 50%; }
+  .dot-red { background: #f7768e; }
+  .dot-yellow { background: #e0af68; }
+  .dot-green { background: #9ece6a; }
+
+  .terminal-title {
+    color: #565f89;
+    font-size: 13px;
+    margin-left: 10px;
+  }
+
+  /* 命令输入行 */
+  .input-line {
+    padding: 16px 24px;
+    background: #1a1b26;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .prompt { color: #9ece6a; }
+  .cmd { color: #c0caf5; font-size: 14px; }
+
+  /* 文档主体 */
+  .document {
+    padding: 28px 32px 40px;
+    background: linear-gradient(180deg, #1a1b26 0%, #1e1f2e 100%);
+  }
+
+  /* 标题 */
+  .doc-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: #e0af68;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+    border-bottom: 2px solid rgba(224, 175, 104, 0.2);
+    padding-bottom: 12px;
+  }
+
+  /* 元数据 */
+  .meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    font-size: 13px;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    border-left: 3px solid #7aa2f7;
+  }
+
+  .meta-key { color: #7aa2f7; font-weight: 500; }
+  .meta-val { color: #a9b1d6; font-family: 'Noto Serif SC', serif; }
+
+  /* 分隔线 */
+  .sep {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(196,149,74,0.3), transparent);
+    margin: 20px 0;
+  }
+
+  /* 区块标题 */
+  .section-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title .emoji { font-size: 20px; }
+  .section-title .text { color: #e0af68; letter-spacing: 3px; }
+
+  /* 廷推表格 */
+  .council-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .council-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: rgba(122, 162, 247, 0.08);
+    color: #7aa2f7;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(122, 162, 247, 0.15);
+    font-family: 'Noto Serif SC', serif;
+  }
+
+  .council-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-family: 'Noto Serif SC', serif;
+  }
+
+  .role-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .role-prime { background: rgba(224,175,104,0.15); color: #e0af68; }
+  .role-deputy { background: rgba(122,162,247,0.15); color: #7aa2f7; }
+  .role-group { background: rgba(158,206,106,0.12); color: #9ece6a; }
+  .role-censor { background: rgba(247,118,142,0.15); color: #f7768e; }
+
+  .advisor-name { color: #e0af68; font-weight: 600; }
+  .match-score { color: #565f89; font-size: 12px; }
+
+  /* 议事纪要 */
+  .speech {
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    border-left: 3px solid transparent;
+  }
+
+  .speech.speaker-1 { border-left-color: #e0af68; }
+  .speech.speaker-2 { border-left-color: #7aa2f7; }
+  .speech.speaker-3 { border-left-color: #f7768e; }
+  .speech.speaker-4 { border-left-color: #9ece6a; }
+  .speech.speaker-5 { border-left-color: #bb9af7; }
+
+  .speaker-name {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .speaker-1 .speaker-name { color: #e0af68; }
+  .speaker-2 .speaker-name { color: #7aa2f7; }
+  .speaker-3 .speaker-name { color: #f7768e; }
+  .speaker-4 .speaker-name { color: #9ece6a; }
+  .speaker-5 .speaker-name { color: #bb9af7; }
+
+  .speech-content {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: #a9b1d6;
+  }
+
+  .speech-content .quote {
+    color: #c4954a;
+    font-style: italic;
+  }
+
+  /* 共识 / 分歧 */
+  .consensus-box {
+    padding: 12px 16px;
+    background: rgba(158,206,106,0.06);
+    border: 1px solid rgba(158,206,106,0.15);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+
+  .consensus-box .title {
+    color: #9ece6a;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 6px;
+    font-family: 'Noto Serif SC', serif;
+  }
+
+  .consensus-box li {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    color: #a9b1d6;
+    line-height: 1.7;
+    margin-left: 16px;
+  }
+
+  .divergence-box {
+    padding: 12px 16px;
+    background: rgba(247,118,142,0.06);
+    border: 1px solid rgba(247,118,142,0.12);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+
+  .divergence-box .title {
+    color: #f7768e;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 6px;
+    font-family: 'Noto Serif SC', serif;
+  }
+
+  .divergence-box li {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    color: #a9b1d6;
+    line-height: 1.7;
+    margin-left: 16px;
+  }
+
+  /* 备选方案 */
+  .plan-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .plan-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: rgba(187, 154, 247, 0.08);
+    color: #bb9af7;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(187,154,247,0.15);
+    font-family: 'Noto Serif SC', serif;
+  }
+
+  .plan-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-family: 'Noto Serif SC', serif;
+    color: #a9b1d6;
+  }
+
+  .plan-name { color: #e0af68; font-weight: 700; }
+
+  /* 给事中封驳 */
+  .censor-box {
+    padding: 16px 18px;
+    background: rgba(247,118,142,0.06);
+    border: 1px solid rgba(247,118,142,0.2);
+    border-radius: 10px;
+    margin-top: 4px;
+  }
+
+  .censor-header {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+    color: #f7768e;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+
+  .censor-content {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13.5px;
+    line-height: 2;
+    color: #c0caf5;
+  }
+
+  /* 结尾 */
+  .closing {
+    text-align: center;
+    padding: 24px 0 8px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #e0af68;
+    letter-spacing: 6px;
+  }
+
+  .approve-box {
+    margin-top: 16px;
+    padding: 16px;
+    border: 2px dashed rgba(224,175,104,0.3);
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .approve-label {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px;
+    color: #565f89;
+    letter-spacing: 4px;
+  }
+
+  .approve-space {
+    height: 40px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3b3f54;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+  }
+
+  /* 标签 */
+  .tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    justify-content: center;
+  }
+
+  .tag {
+    padding: 3px 10px;
+    background: rgba(122,162,247,0.08);
+    border: 1px solid rgba(122,162,247,0.15);
+    border-radius: 20px;
+    font-size: 11px;
+    color: #7aa2f7;
+  }
+</style>
+</head>
+<body>
+  <!-- 终端栏 -->
+  <div class="terminal-bar">
+    <div class="dot dot-red"></div>
+    <div class="dot dot-yellow"></div>
+    <div class="dot dot-green"></div>
+    <span class="terminal-title">claude-code — /council 竞争对手降价应对</span>
+  </div>
+
+  <!-- 命令输入 -->
+  <div class="input-line">
+    <span class="prompt">❯ </span>
+    <span class="cmd">/council 竞争对手降价了怎么办</span>
+  </div>
+
+  <!-- 文档主体 -->
+  <div class="document">
+    <!-- 标题 -->
+    <div class="doc-title">票拟存档 #001：竞争对手降价应对</div>
+
+    <!-- 元数据 -->
+    <div class="meta">
+      <span class="meta-key">日期</span><span class="meta-val">2026-07-20</span>
+      <span class="meta-key">发奏</span><span class="meta-val">主公</span>
+      <span class="meta-key">议题</span><span class="meta-val">竞争对手降价了怎么办</span>
+      <span class="meta-key">丝纶簿</span><span class="meta-val">无相关历史（首次廷议）</span>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- 廷推入阁 -->
+    <div class="section-title">
+      <span class="emoji">🏛</span>
+      <span class="text">廷推入阁</span>
+    </div>
+
+    <table class="council-table">
+      <tr>
+        <th>角色</th><th>谋士</th><th>入选理由</th>
+      </tr>
+      <tr>
+        <td><span class="role-tag role-prime">首辅</span></td>
+        <td><span class="advisor-name">马云</span></td>
+        <td>战略对抗匹配度 9/10 — "不战而屈人之兵"正合此局</td>
+      </tr>
+      <tr>
+        <td><span class="role-tag role-deputy">次辅</span></td>
+        <td><span class="advisor-name">诸葛亮</span></td>
+        <td>全局谋略匹配度 8/10 — 可统筹多维度突围</td>
+      </tr>
+      <tr>
+        <td><span class="role-tag role-group">群辅</span></td>
+        <td><span class="advisor-name">马斯克</span></td>
+        <td>第一性原理 — 可重构竞争维度</td>
+      </tr>
+      <tr>
+        <td><span class="role-tag role-censor">给事中</span></td>
+        <td><span class="advisor-name">韩非子</span></td>
+        <td>制度性质疑 — 防主流意见盲区</td>
+      </tr>
+    </table>
+
+    <div class="sep"></div>
+
+    <!-- 议事纪要 -->
+    <div class="section-title">
+      <span class="emoji">📜</span>
+      <span class="text">议事纪要</span>
+    </div>
+
+    <div class="speech speaker-1">
+      <div class="speaker-name">马云（开场）</div>
+      <div class="speech-content">
+        我经历过无数次价格战。淘宝打易趣的时候，eBay 说要用钱砸死我们——结果呢？<span style="color:#e0af68;font-weight:700">你跟着打，你就输了。</span>客户要的不是便宜，是<span class="quote">「占便宜的感觉」</span>。给他一个"贵得值"的理由，他比谁都忠诚。
+      </div>
+    </div>
+
+    <div class="speech speaker-2">
+      <div class="speaker-name">诸葛亮（回应）</div>
+      <div class="speech-content">
+        马总所言，臣深以为然。然臣补一言——"善战者致人，不致于人"，价格战之要，不在 price，在 <span style="color:#e0af68;font-weight:700">position</span>。当守中寓攻：差异化守住核心，局部反击试探虚实。
+      </div>
+    </div>
+
+    <div class="speech speaker-3">
+      <div class="speaker-name">马斯克（重构）</div>
+      <div class="speech-content">
+        你们都在讨论"怎么打赢价格战"，但我想问——<span style="color:#9ece6a;font-weight:700">为什么还要做现在这个产品？</span>用第一性原理拆解——如果从零开始设计，你会做成现在这样吗？如果不会，那对手降不降价根本不重要，因为你们都在解决一个<strong>错误的问题</strong>。
+      </div>
+    </div>
+
+    <!-- 共识 & 分歧 -->
+    <div class="consensus-box">
+      <div class="title">📌 臣等共识</div>
+      <ul>
+        <li>全体反对盲目跟进降价</li>
+        <li>一致认为应先评估自身核心优势</li>
+        <li>长期价值 &gt; 短期份额</li>
+      </ul>
+    </div>
+
+    <div class="divergence-box">
+      <div class="title">📜 分歧点</div>
+      <ul>
+        <li><b>差异化 vs 重构</b>：诸葛亮主差异化突围，马斯克主第一性原理重构</li>
+      </ul>
+    </div>
+
+    <!-- 备选方案 -->
+    <table class="plan-table">
+      <tr>
+        <th>方案</th><th>主倡</th><th>核心理由</th><th>风险</th>
+      </tr>
+      <tr>
+        <td><span class="plan-name">甲策：差异化突围</span></td>
+        <td>马云、诸葛亮</td>
+        <td>重构竞争维度，让降价失效</td>
+        <td style="color:#f7768e">需时间沉淀</td>
+      </tr>
+      <tr>
+        <td><span class="plan-name">乙策：第一性原理重构</span></td>
+        <td>马斯克</td>
+        <td>重新定义产品，让降价变得无关紧要</td>
+        <td style="color:#e0af68">需颠覆性创新</td>
+      </tr>
+    </table>
+
+    <div class="sep"></div>
+
+    <!-- 给事中封驳 -->
+    <div class="section-title">
+      <span class="emoji">⚠️</span>
+      <span class="text">给事中封驳</span>
+    </div>
+
+    <div class="censor-box">
+      <div class="censor-header">韩非子 谨驳：</div>
+      <div class="censor-content">
+        臣闻诸位皆言"长期主义"，臣独忧之。何也？<b>人之性，趋利避害。</b>主公今日言"不降价"，明日份额掉了五个点——守得住否？<br><br>
+        <b>一曰</b>，赏罚不明何以驱众？<br>
+        <b>二曰</b>，法度不立何以持久？<br>
+        <b>三曰</b>，权术不察何以制敌？<br><br>
+        <span style="color:#f7768e">臣非阻主公行事，臣忧行之而不能终也。臣请主公三思。</span>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- 结尾 -->
+    <div class="closing">臣等谨请圣裁</div>
+
+    <div class="approve-box">
+      <div class="approve-label">批 红</div>
+      <div class="approve-space">[ 请在此填写您的最终决策 ]</div>
+    </div>
+
+    <div class="tags">
+      <span class="tag">商战</span>
+      <span class="tag">定价策略</span>
+      <span class="tag">差异化</span>
+      <span class="tag">竞争战略</span>
+      <span class="tag">长期主义</span>
+    </div>
+  </div>
+</body>
+</html>

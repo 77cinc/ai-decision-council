@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>谋士九宫格</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1080px;
+    height: 1440px;
+    font-family: 'Noto Serif SC', serif;
+    background: #0c0c14;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .header {
+    text-align: center;
+    padding: 50px 0 20px;
+  }
+
+  .header h1 {
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: 12px;
+    background: linear-gradient(135deg, #c4954a, #f0d890);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header .sub {
+    font-size: 22px;
+    color: #5a5650;
+    margin-top: 8px;
+    letter-spacing: 6px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 16px;
+    padding: 30px 36px;
+    height: calc(100% - 180px);
+  }
+
+  .cell {
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cell::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    opacity: 0.03;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 10px,
+      currentColor 10px, currentColor 11px
+    );
+    pointer-events: none;
+  }
+
+  /* 9个领域的配色 */
+  .c1 { background: rgba(220,60,60,0.1); border: 1px solid rgba(220,60,60,0.25); color: #dc3c3c; }
+  .c2 { background: rgba(220,160,40,0.1); border: 1px solid rgba(220,160,40,0.25); color: #dca028; }
+  .c3 { background: rgba(100,180,100,0.1); border: 1px solid rgba(100,180,100,0.25); color: #64b464; }
+  .c4 { background: rgba(100,160,220,0.1); border: 1px solid rgba(100,160,220,0.25); color: #64a0dc; }
+  .c5 { background: rgba(180,120,220,0.1); border: 1px solid rgba(180,120,220,0.25); color: #b478dc; }
+  .c6 { background: rgba(60,180,200,0.1); border: 1px solid rgba(60,180,200,0.25); color: #3cb4c8; }
+  .c7 { background: rgba(220,180,80,0.1); border: 1px solid rgba(220,180,80,0.25); color: #dcb450; }
+  .c8 { background: rgba(200,100,160,0.1); border: 1px solid rgba(200,100,160,0.25); color: #c864a0; }
+  .c9 { background: rgba(240,100,80,0.1); border: 1px solid rgba(240,100,80,0.25); color: #f06450; }
+
+  .cell-icon { font-size: 36px; margin-bottom: 8px; }
+  .cell-title {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .c1 .cell-title { color: #f0a0a0; }
+  .c2 .cell-title { color: #e8c878; }
+  .c3 .cell-title { color: #a0d8a0; }
+  .c4 .cell-title { color: #a0c8e8; }
+  .c5 .cell-title { color: #d0a8e8; }
+  .c6 .cell-title { color: #90d8e0; }
+  .c7 .cell-title { color: #e8d098; }
+  .c8 .cell-title { color: #e0a8c8; }
+  .c9 .cell-title { color: #f0b0a0; }
+
+  .cell-count {
+    font-size: 14px;
+    color: #5a5650;
+    margin-bottom: 12px;
+  }
+
+  .names {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+    align-content: flex-start;
+  }
+
+  .name {
+    font-size: 15px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    color: #c0b8a8;
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  .name.star {
+    font-weight: 700;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .c1 .name { color: #e0c0c0; }
+  .c2 .name { color: #d8c8a0; }
+  .c3 .name { color: #b8d0b8; }
+  .c4 .name { color: #b0c8d8; }
+  .c5 .name { color: #c8b0d8; }
+  .c6 .name { color: #a8ccd0; }
+  .c7 .name { color: #d8c8a0; }
+  .c8 .name { color: #d0b0c0; }
+  .c9 .name { color: #d8b8b0; }
+
+  /* 底部 */
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 24px;
+    background: linear-gradient(transparent, rgba(12,12,20,0.95));
+  }
+
+  .footer-text {
+    font-size: 20px;
+    color: #c4954a;
+    letter-spacing: 4px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>六十五位谋士</h1>
+    <div class="sub">九大领域 · 跨越两千年</div>
+  </div>
+
+  <div class="grid">
+    <!-- 1. 战略军事 -->
+    <div class="cell c1">
+      <div class="cell-icon">⚔️</div>
+      <div class="cell-title">战略 · 军事</div>
+      <div class="cell-count">15 位</div>
+      <div class="names">
+        <span class="name star">马云</span>
+        <span class="name star">诸葛亮</span>
+        <span class="name star">曹操</span>
+        <span class="name star">毛泽东</span>
+        <span class="name star">李世民</span>
+        <span class="name">孙膑</span>
+        <span class="name">司马懿</span>
+        <span class="name">郭嘉</span>
+        <span class="name">韩信</span>
+        <span class="name">霍去病</span>
+        <span class="name">张良</span>
+        <span class="name">刘伯温</span>
+        <span class="name">戚继光</span>
+        <span class="name">朱元璋</span>
+        <span class="name">吴起</span>
+      </div>
+    </div>
+
+    <!-- 2. 制度法家 -->
+    <div class="cell c2">
+      <div class="cell-icon">⚖️</div>
+      <div class="cell-title">制度 · 法家</div>
+      <div class="cell-count">7 位</div>
+      <div class="names">
+        <span class="name star">韩非子</span>
+        <span class="name">商鞅</span>
+        <span class="name">申不害</span>
+        <span class="name">慎到</span>
+        <span class="name">管子</span>
+        <span class="name">张居正</span>
+        <span class="name">王安石</span>
+      </div>
+    </div>
+
+    <!-- 3. 哲学道家 -->
+    <div class="cell c3">
+      <div class="cell-icon">☯️</div>
+      <div class="cell-title">哲学 · 道家</div>
+      <div class="cell-count">5 位</div>
+      <div class="names">
+        <span class="name">老子</span>
+        <span class="name">庄子</span>
+        <span class="name">荀子</span>
+        <span class="name">杨朱</span>
+        <span class="name">许行</span>
+      </div>
+    </div>
+
+    <!-- 4. 儒家文学 -->
+    <div class="cell c4">
+      <div class="cell-icon">📖</div>
+      <div class="cell-title">儒家 · 文学</div>
+      <div class="cell-count">11 位</div>
+      <div class="names">
+        <span class="name star">孔子</span>
+        <span class="name">孟子</span>
+        <span class="name">晏子</span>
+        <span class="name">曾国藩</span>
+        <span class="name">王阳明</span>
+        <span class="name">贾谊</span>
+        <span class="name">杜甫</span>
+        <span class="name">苏轼</span>
+        <span class="name">李白</span>
+        <span class="name">刘邦</span>
+        <span class="name">武则天</span>
+      </div>
+    </div>
+
+    <!-- 5. 逻辑纵横 -->
+    <div class="cell c5">
+      <div class="cell-icon">🧠</div>
+      <div class="cell-title">逻辑 · 纵横</div>
+      <div class="cell-count">5 位</div>
+      <div class="names">
+        <span class="name">邓析</span>
+        <span class="name">公孙龙</span>
+        <span class="name">苏秦</span>
+        <span class="name">鬼谷子</span>
+        <span class="name">吕不韦</span>
+      </div>
+    </div>
+
+    <!-- 6. 科技创新 -->
+    <div class="cell c6">
+      <div class="cell-icon">🔬</div>
+      <div class="cell-title">科学 · 创新</div>
+      <div class="cell-count">7 位</div>
+      <div class="names">
+        <span class="name star">达芬奇</span>
+        <span class="name">伽利略</span>
+        <span class="name">牛顿</span>
+        <span class="name">莱布尼茨</span>
+        <span class="name">图灵</span>
+        <span class="name">冯·诺依曼</span>
+        <span class="name">毕加索</span>
+      </div>
+    </div>
+
+    <!-- 7. 商业经济 -->
+    <div class="cell c7">
+      <div class="cell-icon">💼</div>
+      <div class="cell-title">商业 · 经济</div>
+      <div class="cell-count">3 位</div>
+      <div class="names">
+        <span class="name">德鲁克</span>
+        <span class="name">马云</span>
+        <span class="name">范蠡</span>
+      </div>
+    </div>
+
+    <!-- 8. 现代哲学 -->
+    <div class="cell c8">
+      <div class="cell-icon">🌍</div>
+      <div class="cell-title">现代哲学</div>
+      <div class="cell-count">6 位</div>
+      <div class="names">
+        <span class="name">苏格拉底</span>
+        <span class="name">柏拉图</span>
+        <span class="name">尼采</span>
+        <span class="name">萨特</span>
+        <span class="name">保罗</span>
+        <span class="name">中本聪</span>
+      </div>
+    </div>
+
+    <!-- 9. 其他 -->
+    <div class="cell c9">
+      <div class="cell-icon">🗡️</div>
+      <div class="cell-title">其他</div>
+      <div class="cell-count">6 位</div>
+      <div class="names">
+        <span class="name">扁鹊</span>
+        <span class="name">宫本武藏</span>
+        <span class="name">墨子</span>
+        <span class="name">加缪</span>
+        <span class="name">曹操(小说)</span>
+        <span class="name">邹衍</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">⭐ 金色高亮 = 创始内阁成员</div>
+  </div>
+</body>
+</html>

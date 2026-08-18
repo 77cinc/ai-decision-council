@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>丝纶簿存档</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1080px;
+    font-family: 'Noto Serif SC', serif;
+    background: linear-gradient(135deg, #1a1510 0%, #2a2018 50%, #1a1510 100%);
+    padding: 40px;
+    min-height: 1440px;
+    position: relative;
+  }
+
+  /* 背景纹理 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(196,149,74,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(196,149,74,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* 顶部标题 */
+  .top-title {
+    text-align: center;
+    padding: 20px 0 30px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .top-title h1 {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: 12px;
+    background: linear-gradient(135deg, #c4954a, #f0d890);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .top-title .sub {
+    font-size: 18px;
+    color: #6b5a48;
+    margin-top: 8px;
+    letter-spacing: 6px;
+  }
+
+  .top-title .divider {
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #c4954a, transparent);
+    margin: 16px auto 0;
+  }
+
+  /* 文件浏览器 */
+  .browser {
+    background: #1e1e2e;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 1;
+  }
+
+  .browser-bar {
+    height: 40px;
+    background: #16161e;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #f7768e; }
+  .dot-y { background: #e0af68; }
+  .dot-g { background: #9ece6a; }
+
+  .browser-path {
+    margin-left: 12px;
+    color: #565f89;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+  }
+
+  .browser-path .folder { color: #7aa2f7; }
+  .browser-path .file { color: #9ece6a; }
+
+  /* 文件内容 */
+  .file-content {
+    padding: 30px;
+    background: linear-gradient(180deg, #f5e6c8 0%, #e8d5a8 100%);
+    position: relative;
+  }
+
+  .file-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 30px,
+      rgba(139,90,43,0.03) 30px, rgba(139,90,43,0.03) 31px
+    );
+    pointer-events: none;
+  }
+
+  /* 文档头 */
+  .doc-header {
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .doc-number {
+    display: inline-block;
+    padding: 4px 16px;
+    background: rgba(139,90,43,0.1);
+    border-radius: 20px;
+    font-size: 13px;
+    color: #8b5a2b;
+    margin-bottom: 12px;
+  }
+
+  .doc-title {
+    font-size: 32px;
+    font-weight: 900;
+    color: #2c1810;
+    letter-spacing: 4px;
+    margin-bottom: 16px;
+  }
+
+  /* 元数据 */
+  .doc-meta {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    gap: 4px 16px;
+    text-align: left;
+    font-size: 14px;
+    padding: 12px 20px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 8px;
+    border-left: 3px solid #8b5a2b;
+  }
+
+  .meta-key { color: #8b5a2b; font-weight: 700; }
+  .meta-val { color: #3a2515; }
+
+  /* 分隔 */
+  .sep {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139,90,43,0.3), transparent);
+    margin: 20px 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 段落 */
+  .section {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 900;
+    color: #2c1810;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-body {
+    font-size: 15px;
+    color: #3a2515;
+    line-height: 2;
+    padding-left: 8px;
+  }
+
+  .section-body .name {
+    font-weight: 700;
+    color: #8b3a1a;
+  }
+
+  .section-body .quote {
+    color: #6b4a2a;
+    font-style: italic;
+  }
+
+  /* 方案表 */
+  .plan-row {
+    display: flex;
+    gap: 12px;
+    margin: 10px 0;
+  }
+
+  .plan-item {
+    flex: 1;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 8px;
+    border-left: 3px solid;
+  }
+
+  .plan-item.a { border-left-color: #2a7ae2; }
+  .plan-item.b { border-left-color: #dc3c3c; }
+
+  .plan-label {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .plan-item.a .plan-label { color: #2a7ae2; }
+  .plan-item.b .plan-label { color: #dc3c3c; }
+
+  .plan-desc {
+    font-size: 14px;
+    color: #3a2515;
+    line-height: 1.6;
+  }
+
+  /* 结尾 */
+  .ending {
+    text-align: center;
+    padding: 20px 0 8px;
+    font-size: 22px;
+    font-weight: 900;
+    color: #2c1810;
+    letter-spacing: 6px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 批红区 */
+  .approve-area {
+    margin-top: 16px;
+    padding: 20px;
+    border: 2px dashed rgba(139,90,43,0.3);
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .approve-label {
+    font-size: 16px;
+    color: #8b5a2b;
+    letter-spacing: 6px;
+    margin-bottom: 8px;
+  }
+
+  .approve-status {
+    font-size: 14px;
+    color: #b08a6a;
+    font-style: italic;
+  }
+
+  /* 印章 */
+  .seal {
+    position: absolute;
+    bottom: 30px;
+    right: 20px;
+    width: 80px;
+    height: 80px;
+    border: 3px solid #c23;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #c23;
+    font-weight: 900;
+    transform: rotate(-10deg);
+    opacity: 0.5;
+    z-index: 2;
+    letter-spacing: 2px;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* 标签 */
+  .tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tag {
+    padding: 4px 12px;
+    background: rgba(139,90,43,0.1);
+    border: 1px solid rgba(139,90,43,0.2);
+    border-radius: 20px;
+    font-size: 12px;
+    color: #8b5a2b;
+  }
+
+  /* 底部索引 */
+  .index-preview {
+    margin-top: 30px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .index-title {
+    font-size: 16px;
+    color: #c4954a;
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+  }
+
+  .index-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .index-table th {
+    text-align: left;
+    padding: 10px 12px;
+    background: rgba(196,149,74,0.1);
+    color: #c4954a;
+    border-bottom: 1px solid rgba(196,149,74,0.2);
+    font-weight: 600;
+  }
+
+  .index-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(196,149,74,0.08);
+    color: #b0a090;
+  }
+
+  .index-table .active {
+    background: rgba(196,149,74,0.05);
+    color: #e0af68;
+    font-weight: 700;
+  }
+
+  .highlight-row {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { background: rgba(196,149,74,0.05); }
+    50% { background: rgba(196,149,74,0.12); }
+  }
+</style>
+</head>
+<body>
+  <div class="top-title">
+    <h1>丝纶簿 · 存档</h1>
+    <div class="sub">每次议事自动生成 · 跨会话可检索</div>
+    <div class="divider"></div>
+  </div>
+
+  <!-- 文件浏览器 -->
+  <div class="browser">
+    <div class="browser-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <span class="browser-path">
+        <span class="folder">智囊团议事录</span> / <span class="file">2026-07-20-竞品降价.md</span>
+      </span>
+    </div>
+
+    <div class="file-content">
+      <div class="doc-header">
+        <div class="doc-number">存档 #001</div>
+        <div class="doc-title">竞争对手降价应对</div>
+        <div class="doc-meta">
+          <span class="meta-key">日期</span><span class="meta-val">2026-07-20</span>
+          <span class="meta-key">首辅</span><span class="meta-val">马云</span>
+          <span class="meta-key">参与谋士</span><span class="meta-val">诸葛亮、马斯克</span>
+          <span class="meta-key">给事中</span><span class="meta-val">韩非子</span>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- 议事摘要 -->
+      <div class="section">
+        <div class="section-title">📌 臣等共识</div>
+        <div class="section-body">
+          · 全体反对盲目跟进降价<br>
+          · 一致认为应先评估自身核心优势<br>
+          · 长期价值 > 短期份额
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📜 分歧点</div>
+        <div class="section-body">
+          · <span class="name">差异化 vs 重构</span>：诸葛亮主差异化，马斯克主第一性原理重构
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🎯 备选方案</div>
+        <div class="plan-row">
+          <div class="plan-item a">
+            <div class="plan-label">甲策：差异化突围</div>
+            <div class="plan-desc">主倡：马云、诸葛亮<br>重构价值感知，让降价失效</div>
+          </div>
+          <div class="plan-item b">
+            <div class="plan-label">乙策：第一性原理重构</div>
+            <div class="plan-desc">主倡：马斯克<br>重新定义产品，让降价无关紧要</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="section">
+        <div class="section-title">⚠️ 给事中封驳</div>
+        <div class="section-body">
+          <span class="name">韩非子</span>：差异化之言易，行之难。若无制度护航，终成空谈。<span class="quote">臣请主公三思。</span>
+        </div>
+      </div>
+
+      <div class="ending">恭请主公批红</div>
+
+      <div class="approve-area">
+        <div class="approve-label">批 红</div>
+        <div class="approve-status">[ 待主公决策 ]</div>
+      </div>
+
+      <div class="tags">
+        <span class="tag">商战</span>
+        <span class="tag">定价策略</span>
+        <span class="tag">差异化</span>
+        <span class="tag">竞争战略</span>
+        <span class="tag">长期主义</span>
+      </div>
+
+      <div class="seal">丝纶<br>簿</div>
+    </div>
+  </div>
+
+  <!-- 索引预览 -->
+  <div class="index-preview">
+    <div class="index-title">📋 INDEX.md · 丝纶簿总索引</div>
+    <table class="index-table">
+      <tr>
+        <th>#</th>
+        <th>日期</th>
+        <th>议题</th>
+        <th>首辅</th>
+        <th>给事中</th>
+        <th>批红</th>
+      </tr>
+      <tr>
+        <td>000</td>
+        <td>2026-07-20</td>
+        <td>示例：竞品降价应对</td>
+        <td>马云</td>
+        <td>韩非子</td>
+        <td>[模板]</td>
+      </tr>
+      <tr class="highlight-row">
+        <td class="active">001</td>
+        <td class="active">2026-07-20</td>
+        <td class="active">竞争对手降价应对</td>
+        <td class="active">马云</td>
+        <td class="active">韩非子</td>
+        <td class="active">[待批红]</td>
+      </tr>
+      <tr>
+        <td colspan="6" style="text-align:center;color:#5a5040;padding:16px">
+          ↓ 下次议事自动追加新行 ...
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

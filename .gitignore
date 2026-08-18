@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+.AppleDouble
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude Code session data (not for sharing)
+sessions/
+projects/
+backups/
+telemetry/
+file-history/
+shell-snapshots/
+settings.local.json
